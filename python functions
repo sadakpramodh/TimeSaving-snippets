@@ -1,0 +1,57 @@
+# Memory optimization in pandas dataframe
+
+import numbers
+import pandas as pd
+from typing import Optional
+
+def auto_opt_pd_dtypes(df_: pd.DataFrame, inplace=False) -> Optional[pd.DataFrame]:
+    """ Automatically downcast Number dtypes for minimal possible,
+        will not touch other (datetime, str, object, etc)
+        
+        :param df_: dataframe
+        :param inplace: if False, will return a copy of input dataset
+        
+        :return: `None` if `inplace=True` or dataframe if `inplace=False`
+    """
+    df = df_ if inplace else df_.copy()
+        
+    for col in df.columns:
+        # integers
+        if issubclass(df[col].dtypes.type, numbers.Integral):
+            # unsigned integers
+            if df[col].min() >= 0:
+                df[col] = pd.to_numeric(df[col], downcast='unsigned')
+            # signed integers
+            else:
+                df[col] = pd.to_numeric(df[col], downcast='integer')
+        # other real numbers
+        elif issubclass(df[col].dtypes.type, numbers.Real):
+            df[col] = pd.to_numeric(df[col], downcast='float')
+    
+    if not inplace:
+        return df
+        
+     """
+     
+      auto_opt_pd_dtypes(df, inplace=True)
+      df_1 = auto_opt_pd_dtypes(df)
+      
+     """
+     
+     
+# Return week number from date
+
+from dateutil import parser
+def date_to_week(x):
+    
+    yourdate = parser.parse(x)
+    print(yourdate)
+    year, week_num, day_of_week = yourdate.isocalendar()
+    # print("Week #" + str(week_num) + " of year " + str(year))
+    return week_num
+
+    
+ """
+  df['week number'] = df['date'].apply( lambda x: date_to_week(x))
+  
+ """
